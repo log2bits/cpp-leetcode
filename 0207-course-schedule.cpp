@@ -1,28 +1,26 @@
 class Solution {
 public:
     bool canFinish(int numCourses, vector<vector<int>>& prerequisites) {
-        vector<vector<int>> courses_available_after_taking(numCourses);
-        vector<int> num_courses_needed_to_take(numCourses, 0);
+        vector<vector<int>> unlocks(numCourses);
+        vector<int> prereqs_left(numCourses, 0);
         for (const auto& p : prerequisites) {
             int course = p[0];
             int prereq = p[1];
-            courses_available_after_taking[prereq].push_back(course);
-            ++num_courses_needed_to_take[course];
+            unlocks[prereq].push_back(course);
+            ++prereqs_left[course];
         }
 
-        queue<int> courses_available;
+        queue<int> ready;
         for (int course = 0; course < numCourses; ++course) {
-            if (num_courses_needed_to_take[course] == 0) courses_available.push(course);
+            if (prereqs_left[course] == 0) ready.push(course);
         }
 
         int taken = 0;
-        while (!courses_available.empty()) {
-            int course_taken = courses_available.front();
-            courses_available.pop();
-            for (int potentially_available_course : courses_available_after_taking[course_taken]) {
-                if (--num_courses_needed_to_take[potentially_available_course] == 0) {
-                    courses_available.push(potentially_available_course);
-                }
+        while (!ready.empty()) {
+            int course = ready.front();
+            ready.pop();
+            for (int unlocked : unlocks[course]) {
+                if (--prereqs_left[unlocked] == 0) ready.push(unlocked);
             }
             ++taken;
         }
